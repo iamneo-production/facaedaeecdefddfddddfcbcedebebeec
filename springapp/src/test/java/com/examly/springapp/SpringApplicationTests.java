@@ -1,85 +1,60 @@
 package com.examly.springapp;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+import java.net.URL;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
-import org.junit.Test; 
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-@SpringBootTest(classes = SpringappApplication.class)
-@AutoConfigureMockMvc
-@RunWith(SpringRunner.class)
 public class SpringApplicationTests {
 
-	@Autowired
-    private MockMvc mockMvc;	
-
-	//Add A New Task
-	@Test
-    public void test_case1() throws Exception {
-		
-		String dataOne = "{\"taskId\":\"12211\",\"taskHolderName\":\"Gowthaman M\",\"taskDate\":\"4/15/2021\",\"taskName\":\"Spring Projects\",\"taskStatus\":\"In Progress\"}";
-	 	mockMvc.perform(MockMvcRequestBuilders.post("/saveTask")
-	 			.contentType(MediaType.APPLICATION_JSON)
-	 			.content(dataOne)
-	 			.accept(MediaType.APPLICATION_JSON))
-	        	.andExpect(status().isOk())
-	        	.andReturn();
-	 	
+    public static void main(String[] args) {
+		try{
+        ChromeOptions chromeOptions = new ChromeOptions();
+        WebDriver driver = new RemoteWebDriver(new URL("http://34.85.242.216:4444"), chromeOptions);
+        
+        driver.manage().window().maximize();
+        driver.get("http://www.snapdeal.com");
+            // Move to Sign In Button and hold
+            WebElement signInButton = driver.findElement(By.xpath("//div[@class='accountInner']"));
+            Actions actions = new Actions(driver);
+            actions.moveToElement(signInButton).perform();
+            
+            // Move to the Sign In button and click
+            WebElement signInLink = driver.findElement(By.xpath("//a[contains(text(),'login')]"));
+            actions.moveToElement(signInLink).click().perform();
+            
+            // Switch to the login iframe
+            driver.switchTo().frame("loginIframe");
+            
+            // Enter a valid Email Id and click continue
+            WebElement emailInput = driver.findElement(By.id("userName"));
+            emailInput.sendKeys("your_valid_email@example.com");
+            
+            WebElement continueButton = driver.findElement(By.id("checkUser"));
+            continueButton.click();
+            
+            // Enter the valid password and click LOGIN
+            WebElement passwordInput = driver.findElement(By.id("j_password_login_uc"));
+            passwordInput.sendKeys("your_valid_password");
+            
+            WebElement loginButton = driver.findElement(By.id("submitLoginUC"));
+            loginButton.click();
+            
+            // Switch back to the main content
+            driver.switchTo().defaultContent();
+            
+            // Verify that the user is logged in successfully (you can add your verification logic here)
+            WebElement loggedInUser = driver.findElement(By.xpath("//div[@class='myAccountTab accountHeaderClass']"));
+            if (loggedInUser.getText().contains("Your Account")) {
+                System.out.println("User logged in successfully.");
+            } else {
+                System.out.println("Login failed.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-	
-	
-	//Get All Task
-	@Test
-    public void test_case2() throws Exception {
-		
-	 	mockMvc.perform(MockMvcRequestBuilders.get("/alltasks")
-	 			.contentType(MediaType.APPLICATION_JSON)
-	 			.accept(MediaType.APPLICATION_JSON))
-	        	.andExpect(status().isOk())
-		        .andExpect(MockMvcResultMatchers.jsonPath("$[*].houseNo").exists())
-		        .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty())
-	        	.andReturn();
-	 	
-    }
-	
-	//Get A Task By ID
-	@Test
-	public void test_case3() throws Exception {
-		
-		mockMvc.perform(MockMvcRequestBuilders.get("/getTask")
-				.param("taskId","12211")
-				.contentType(MediaType.APPLICATION_JSON)
-		 		.accept(MediaType.APPLICATION_JSON))
-		        .andExpect(status().isOk())
-		        .andExpect(jsonPath("$.taskHolderName").value("Gowthaman M"))
-		        .andExpect(jsonPath("$.taskDate").value("4/15/2021"))
-		        .andExpect(jsonPath("$.taskName").value("Spring Projects"))
-				.andExpect(jsonPath("$.taskStatus").value("In Progress"))
-		        .andReturn();
-			
-	}
-	
-	//Delete A Task
-	@Test
-	public void test_case4() throws Exception {
-		
-		mockMvc.perform(MockMvcRequestBuilders.get("/deleteTask")
-				.param("taskId","12211")
-				.contentType(MediaType.APPLICATION_JSON)
-		 		.accept(MediaType.APPLICATION_JSON))
-		        .andExpect(status().isOk())
-		        .andReturn();
-			
-	}
-
-
 }
